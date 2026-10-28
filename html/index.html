@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f2f0e8">
+    <title>My IP | RFC 2821</title>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            color-scheme: light;
+            --paper: #f2f0e8;
+            --ink: #17241e;
+            --muted: #6d776f;
+            --green: #214a3b;
+            --lime: #d6f36a;
+            --coral: #e6684c;
+            --line: rgba(23, 36, 30, 0.16);
+            --sans: "Manrope", "Avenir Next", Avenir, sans-serif;
+            --mono: "DM Mono", "SFMono-Regular", Consolas, monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            min-width: 320px;
+            min-height: 100vh;
+            min-height: 100dvh;
+            margin: 0;
+            color: var(--ink);
+            background-color: var(--paper);
+            background-image:
+                linear-gradient(rgba(23, 36, 30, 0.035) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(23, 36, 30, 0.035) 1px, transparent 1px);
+            background-size: 32px 32px;
+            font-family: var(--sans);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .page {
+            display: flex;
+            min-height: 100vh;
+            min-height: 100dvh;
+            height: 100vh;
+            height: 100dvh;
+            flex-direction: column;
+            width: min(100% - 64px, 1180px);
+            margin: 0 auto;
+        }
+
+        .topbar,
+        .footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            min-height: 76px;
+            border-bottom: 1px solid var(--line);
+            font-family: var(--mono);
+            font-size: 12px;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
+
+        .wordmark {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--ink);
+            font-family: var(--sans);
+            font-size: 15px;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            text-decoration: none;
+            text-transform: none;
+        }
+
+        .mark {
+            display: inline-grid;
+            width: 28px;
+            height: 28px;
+            place-items: center;
+            color: var(--paper);
+            background: var(--green);
+            font-family: var(--mono);
+            font-size: 11px;
+        }
+
+        .top-label {
+            color: var(--muted);
+        }
+
+        .lookup {
+            display: flex;
+            flex: 1;
+            min-height: 0;
+            padding: 24px 0;
+        }
+
+        .readout-label {
+            margin: 0;
+            font-family: var(--mono);
+            font-size: 12px;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .readout {
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex: 1;
+            flex-direction: column;
+            justify-content: space-between;
+            min-width: 0;
+            padding: clamp(28px, 5vw, 72px);
+            color: #f5f4ed;
+            background: var(--green);
+            animation: arrive 600ms ease-out both;
+        }
+
+        .readout::after {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 5px;
+            height: 100%;
+            background: var(--lime);
+            content: "";
+        }
+
+        .readout-top,
+        .readout-bottom {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+        }
+
+        .readout-label {
+            color: rgba(245, 244, 237, 0.7);
+        }
+
+        .ip-value {
+            display: block;
+            overflow-wrap: anywhere;
+            min-height: 1.2em;
+            margin: auto 0;
+            color: var(--lime);
+            font-family: var(--mono);
+            font-size: 72px;
+            line-height: 1.2;
+        }
+
+        .readout-bottom {
+            padding-top: 20px;
+            border-top: 1px solid rgba(245, 244, 237, 0.24);
+        }
+
+        .address-type {
+            color: rgba(245, 244, 237, 0.7);
+            font-family: var(--mono);
+            font-size: 11px;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+
+        .copy-button {
+            min-height: 40px;
+            padding: 0 14px;
+            border: 1px solid rgba(245, 244, 237, 0.5);
+            border-radius: 2px;
+            color: #f5f4ed;
+            background: transparent;
+            font: 600 12px var(--sans);
+            cursor: pointer;
+            transition: color 150ms ease, background-color 150ms ease, border-color 150ms ease;
+        }
+
+        .copy-button:hover:not(:disabled) {
+            border-color: var(--lime);
+            color: var(--ink);
+            background: var(--lime);
+        }
+
+        .copy-button:focus-visible {
+            outline: 2px solid var(--lime);
+            outline-offset: 3px;
+        }
+
+        .copy-button:disabled {
+            opacity: 0.55;
+            cursor: wait;
+        }
+
+        .footer {
+            min-height: 58px;
+            border-top: 1px solid var(--line);
+            border-bottom: 0;
+            font-size: 10px;
+        }
+
+        .footer-accent {
+            color: var(--green);
+        }
+
+        .visually-hidden {
+            position: absolute;
+            overflow: hidden;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            border: 0;
+            margin: -1px;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            clip-path: inset(50%);
+        }
+
+        @keyframes arrive {
+            from {
+                opacity: 0;
+                transform: translateY(12px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 760px) {
+            .page {
+                width: min(100% - 40px, 680px);
+            }
+
+            .topbar {
+                min-height: 64px;
+            }
+
+            .readout {
+                padding: 28px 24px;
+            }
+
+            .ip-value {
+                font-size: 40px;
+            }
+        }
+
+        @media (max-width: 380px) {
+            .page {
+                width: min(100% - 32px, 560px);
+            }
+
+            .top-label {
+                font-size: 10px;
+            }
+
+            .readout-bottom {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                scroll-behavior: auto !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <header class="topbar">
+            <a class="wordmark" href="/" aria-label="My IP home">
+                <span class="mark" aria-hidden="true">IP</span>
+                <span>myip<span class="footer-accent">.</span></span>
+            </a>
+            <span class="top-label">rfc2821.it / network tools</span>
+        </header>
+
+        <main class="lookup">
+            <section class="readout" aria-label="IP address result">
+                <div class="readout-top">
+                    <p class="readout-label">Current address</p>
+                </div>
+                <output class="ip-value" id="myip" aria-live="polite">Finding IP...</output>
+                <div class="readout-bottom">
+                    <span class="address-type" id="address-type">Public IP</span>
+                    <button class="copy-button" id="copy-button" type="button" disabled>Copy address</button>
+                </div>
+                <p class="visually-hidden" id="connection-status" role="status" aria-live="polite">
+                    <span id="status-text">Checking connection</span>
+                </p>
+            </section>
+        </main>
+
+        <footer class="footer">
+            <span>myip.rfc2821.it</span>
+        </footer>
+    </div>
+
+    <script>
+        const apiUrl = 'https://tnmc6mz3wlkw8ccy.3sn.lambda-web.eu-central-1.on.aws/';
+        const ipOutput = document.getElementById('myip');
+        const status = document.getElementById('connection-status');
+        const statusText = document.getElementById('status-text');
+        const copyButton = document.getElementById('copy-button');
+        const addressType = document.getElementById('address-type');
+
+        async function loadIp() {
+            try {
+                const response = await fetch(apiUrl);
+                if (!response.ok) {
+                    throw new Error(`Request failed with status ${response.status}`);
+                }
+
+                const data = await response.json();
+                if (!data.ip) {
+                    throw new Error('The response did not contain an IP address');
+                }
+
+                ipOutput.textContent = data.ip;
+                addressType.textContent = data.ip.includes(':') ? 'IPv6 address ❤️' : 'IPv4 address';
+                status.dataset.state = 'success';
+                statusText.textContent = 'Connection found';
+                copyButton.disabled = false;
+            } catch (error) {
+                ipOutput.textContent = 'Unavailable';
+                addressType.textContent = 'Lookup failed';
+                status.dataset.state = 'error';
+                statusText.textContent = 'Could not reach the lookup service';
+                console.error('IP lookup failed:', error);
+            }
+        }
+
+        copyButton.addEventListener('click', async () => {
+            try {
+                await navigator.clipboard.writeText(ipOutput.textContent);
+                statusText.textContent = 'Address copied';
+            } catch (error) {
+                statusText.textContent = 'Could not copy address';
+                console.error('Copy failed:', error);
+            }
+        });
+
+        loadIp();
+    </script>
+</body>
+</html>
