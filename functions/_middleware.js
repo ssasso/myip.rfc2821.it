@@ -9,7 +9,7 @@ export async function onRequest(context) {
   if (userAgent.toLowerCase().includes("curl")) {
     
     // Costruisce l'URL statico della root utilizzando la costante
-    const targetUrl = `https://${TARGET_HOST}/`;
+    const targetUrl = `https://${TARGET_HOST}/text`;
 
     // Clona la richiesta forzando l'header host con la costante comune
     const modifiedRequest = new Request(targetUrl, new Request(request, {
