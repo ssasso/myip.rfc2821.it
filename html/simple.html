@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>What's my IP address?</title>
+    <link rel="icon" href="/favicon.ico">
+</head>
+<body>
+    <header>
+        <h1>What's my IP address?</h1>
+    </header>
+    <main>
+        <p>Your IP address is:</p>
+        <p><strong><output id="myip" aria-live="polite">Looking it up...</output></strong></p>
+        <p>Address type: <span id="address-type">Checking...</span></p>
+        <p id="status" role="status" aria-live="polite"></p>
+    </main>
+    <script>
+        fetch('https://tnmc6mz3wlkw8ccy.3sn.lambda-web.eu-central-1.on.aws/')
+            .then((response) => {
+                if (!response.ok) {
+                    throw new Error('IP lookup failed');
+                }
+                return response.json();
+            })
+            .then((data) => {
+                document.getElementById('myip').textContent = data.ip;
+                document.getElementById('address-type').textContent = data.ip.includes(':')
+                    ? 'IPv6 address ❤️'
+                    : 'IPv4 address';
+            })
+            .catch(() => {
+                document.getElementById('myip').textContent = 'Unavailable';
+                document.getElementById('address-type').textContent = 'Unavailable';
+                document.getElementById('status').textContent = 'Could not retrieve your IP address.';
+            });
+    </script>
+</body>
+</html>
