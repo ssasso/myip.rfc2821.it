@@ -8,11 +8,16 @@ const server = createServer((req, res) => {
 	const forwardedFor = forwardedForRaw === undefined
 		? undefined
 		: String(forwardedForRaw).split(',').map((ip) => ip.trim());
+	const url = new URL(req.url, 'http://localhost');
+	const pathname = url.pathname;
+	const forwardedForIndex = url.searchParams.get('proxy_from') === 'cfpages'
+		? forwardedFor?.length - 2
+		: forwardedFor?.length - 1;
 	const body = forwardedFor === undefined
 		? { ip: callerIp }
 		: {
 			caller_ip: callerIp,
-			ip: forwardedFor[forwardedFor.length - 1],
+			ip: forwardedFor[forwardedForIndex],
 			origin_ip: forwardedFor[0],
 			x_forwarded_for_raw: String(forwardedForRaw),
 			x_forwarded_for: forwardedFor
@@ -20,8 +25,6 @@ const server = createServer((req, res) => {
 	const headers = {
 		'Access-Control-Allow-Origin': '*'
 	};
-	const pathname = new URL(req.url, 'http://localhost').pathname;
-
 	if (pathname === '/text') {
 		headers['Content-Type'] = 'text/plain';
 		res.writeHead(200, headers);
