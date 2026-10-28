@@ -12,11 +12,28 @@
     </header>
     <main>
         <p>Your IP address is:</p>
-        <p><strong><output id="myip" aria-live="polite">Looking it up...</output></strong></p>
+        <p><strong><output id="myip" aria-live="polite" style="font-size: 1.25em;">Looking it up...</output></strong></p>
         <p>Address type: <span id="address-type">Checking...</span></p>
         <p id="status" role="status" aria-live="polite"></p>
     </main>
+    <footer style="margin-top: 40px; padding: 16px; background-color: lightgray; color: #444;">
+        <p><b>curl version</b></p>
+        <pre style="white-space: pre-wrap; overflow-wrap: anywhere;"><code id="curl-command">curl https://tnmc6mz3wlkw8ccy.3sn.lambda-web.eu-central-1.on.aws/text</code></pre>
+        <button id="copy-command" type="button">Copy command</button>
+        <span id="copy-status" role="status" aria-live="polite"></span>
+    </footer>
     <script>
+        document.getElementById('copy-command').addEventListener('click', () => {
+            const command = document.getElementById('curl-command').textContent;
+            navigator.clipboard.writeText(command)
+                .then(() => {
+                    document.getElementById('copy-status').textContent = 'Command copied.';
+                })
+                .catch(() => {
+                    document.getElementById('copy-status').textContent = 'Could not copy command.';
+                });
+        });
+
         fetch('https://tnmc6mz3wlkw8ccy.3sn.lambda-web.eu-central-1.on.aws/')
             .then((response) => {
                 if (!response.ok) {
